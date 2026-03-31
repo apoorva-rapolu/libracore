@@ -15,7 +15,6 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "libracore.db")
 
 app = Flask(__name__)
 app.secret_key = "libracore-secret-2024"
-seed_db()
 # ─────────────────────────────────────────
 #  DATABASE CONNECTION HELPERS
 # ─────────────────────────────────────────
@@ -250,6 +249,8 @@ def seed_db():
     db.executescript(seed)
     db.commit()
     db.close()
+
+seed_db()
 
 # ─────────────────────────────────────────
 #  AUTH ROUTES
