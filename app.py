@@ -15,7 +15,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "libracore.db")
 
 app = Flask(__name__)
 app.secret_key = "libracore-secret-2024"
-seed_db()
+
 # ─────────────────────────────────────────
 #  DATABASE CONNECTION HELPERS
 # ─────────────────────────────────────────
@@ -723,12 +723,14 @@ def api_sql():
 # ─────────────────────────────────────────
 #  RUN
 # ─────────────────────────────────────────
+seed_db()
+
 if __name__ == "__main__":
-    seed_db()
+    port = int(os.environ.get("PORT", 5000))
     print("\n" + "="*50)
     print("  LibraCore is running!")
-    print("  Open: http://localhost:5000")
+    print(f"  Open: http://localhost:{port}")
     print("  Librarian: admin1 / admin123")
     print("  Member password: pass123")
     print("="*50 + "\n")
-    app.run(debug=True, port=5000)
+    app.run(host="0.0.0.0", debug=False, port=port)
