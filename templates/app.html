@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LibraCore</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0e0f13;--surface:#16181f;--surface2:#1e2029;--border:#2a2d3a;--accent:#c8a96e;--text:#e8e4dc;--muted:#7a7d8c;--green:#5cb88a;--red:#e07070;--blue:#7eb8a4;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;}
+.sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;}
+.logo{padding:22px 18px 18px;border-bottom:1px solid var(--border);}
+.logo-title{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--accent);}
+.logo-role{font-size:.6rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:2px;}
+.nav-sec{padding:14px 12px 3px;font-size:.58rem;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 15px;margin:1px 8px;border-radius:7px;cursor:pointer;font-size:.81rem;color:var(--muted);transition:all .15s;font-weight:500;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:linear-gradient(90deg,rgba(200,169,110,.15),transparent);color:var(--accent);border-left:2px solid var(--accent);margin-left:6px;padding-left:13px;}
+.nav-icon{font-size:.9rem;width:18px;text-align:center;}
+.sidebar-foot{margin-top:auto;padding:14px;border-top:1px solid var(--border);font-size:.7rem;color:var(--muted);}
+.db-badge{display:inline-flex;align-items:center;gap:5px;font-size:.64rem;color:var(--green);background:rgba(92,184,138,.1);border:1px solid rgba(92,184,138,.25);padding:3px 9px;border-radius:20px;}
+.db-badge::before{content:'●';font-size:.5rem;}
+.logout-btn{display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--red);font-size:.78rem;font-weight:600;margin-top:8px;}
+.logout-btn:hover{opacity:.8;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:54px;min-height:54px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 26px;}
+.topbar-title{font-family:'Playfair Display',serif;font-size:1.05rem;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.badge{font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.05em;}
+.badge-lib{background:var(--accent);color:#0e0f13;}
+.badge-mem{background:var(--blue);color:#0e0f13;}
+.user-name{font-size:.8rem;color:var(--muted);}
+.content{flex:1;overflow-y:auto;padding:24px;}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:18px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.sc-gold::before{background:var(--accent);}
+.sc-green::before{background:var(--green);}
+.sc-blue::before{background:var(--blue);}
+.sc-red::before{background:var(--red);}
+.sc-label{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;}
+.sc-value{font-family:'Playfair Display',serif;font-size:1.85rem;line-height:1;}
+.sc-sub{font-size:.68rem;color:var(--muted);margin-top:4px;}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sec-title{font-family:'Playfair Display',serif;font-size:.98rem;}
+.btn{padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.77rem;font-weight:600;transition:all .15s;}
+.btn-p{background:var(--accent);color:#0e0f13;} .btn-p:hover{background:#d9bc85;}
+.btn-g{background:transparent;color:var(--muted);border:1px solid var(--border);} .btn-g:hover{color:var(--text);border-color:var(--muted);}
+.btn-sm{padding:4px 9px;font-size:.71rem;}
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden;margin-bottom:20px;}
+table{width:100%;border-collapse:collapse;}
+thead th{background:var(--surface2);padding:10px 15px;text-align:left;font-size:.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--surface2);}
+tbody td{padding:10px 15px;font-size:.81rem;}
+.mono{font-family:'DM Mono',monospace;font-size:.74rem;color:var(--muted);}
+.pill{display:inline-flex;padding:2px 9px;border-radius:20px;font-size:.65rem;font-weight:600;}
+.p-green{background:rgba(92,184,138,.15);color:#5cb88a;}
+.p-red{background:rgba(224,112,112,.15);color:#e07070;}
+.p-gold{background:rgba(200,169,110,.15);color:#c8a96e;}
+.p-blue{background:rgba(126,184,164,.15);color:#7eb8a4;}
+.p-grey{background:rgba(122,125,140,.15);color:#7a7d8c;}
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:.83rem;}
+.overdue-row td{color:var(--red) !important;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:13px;width:460px;max-width:95vw;padding:24px;max-height:85vh;overflow-y:auto;}
+.modal-title{font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:16px;color:var(--accent);}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.field label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.field input,.field select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;width:100%;}
+.field input:focus,.field select:focus{border-color:var(--accent);}
+.field select option{background:var(--surface2);}
+.modal-foot{display:flex;gap:9px;justify-content:flex-end;margin-top:16px;}
+.portal-note{background:rgba(126,184,164,.08);border:1px solid rgba(126,184,164,.2);border-radius:8px;padding:11px 14px;font-size:.78rem;color:var(--blue);margin-bottom:18px;}
+.book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;}
+.book-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;transition:border-color .15s;}
+.book-card:hover{border-color:var(--accent);}
+.book-card-title{font-weight:600;font-size:.85rem;margin-bottom:4px;line-height:1.3;}
+.book-card-auth{font-size:.73rem;color:var(--muted);margin-bottom:8px;}
+.sql-editor{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.83rem;padding:14px;resize:vertical;min-height:120px;outline:none;line-height:1.55;}
+.sql-editor:focus{border-color:var(--accent);}
+.sql-run-bar{display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap;}
+.sql-status{font-size:.75rem;color:var(--muted);}
+.sql-status.ok{color:var(--green);}
+.sql-status.err{color:var(--red);}
+.preset-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
+.chip{padding:4px 11px;border-radius:20px;font-size:.7rem;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);transition:all .15s;}
+.chip:hover{border-color:var(--accent);color:var(--accent);}
+.chip.hard{border-color:rgba(224,112,112,.3);color:var(--red);}
+.chip.hard:hover{border-color:var(--red);}
+::-webkit-scrollbar{width:5px;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.loading{text-align:center;padding:32px;color:var(--muted);font-size:.83rem;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-title">📚 LibraCore</div>
+    <div class="logo-role" id="sidebar-role">Portal</div>
+  </div>
+  <div id="nav-links"></div>
+  <div class="sidebar-foot">
+    <div id="logged-in-as" style="margin-bottom:6px;font-weight:600;"></div>
+    <div class="db-badge">Flask + SQLite</div>
+    <div style="margin-top:6px;font-size:.65rem;">Lab No. 6 · Mini Project Phase I</div>
+    <div class="logout-btn" onclick="location.href='/logout'">⏻ Sign Out</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-right">
+      <span class="user-name" id="topbar-user"></span>
+      <span class="badge" id="topbar-badge">LIBRARIAN</span>
+    </div>
+  </div>
+  <div class="content" id="content-area"><div class="loading">Loading…</div></div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="modal" id="modal-box"></div>
+</div>
+
+<script>
+// ── USER injected from Flask session ──
+const USER = {{ user | tojson }};
+const IS_LIB = USER.role === 'librarian';
+
+// ── NAV ──
+const LIB_NAV = [
+  {section:'Overview', items:[{id:'dashboard',icon:'⊞',label:'Dashboard'},{id:'sql-runner',icon:'⌨',label:'SQL Runner'}]},
+  {section:'Catalogue', items:[{id:'books',icon:'📖',label:'Books'},{id:'copies',icon:'🗂',label:'Copies & Racks'},{id:'authors',icon:'✍',label:'Authors'}]},
+  {section:'Circulation', items:[{id:'issues',icon:'↗',label:'Issued Books'},{id:'returns',icon:'↩',label:'Returns'},{id:'overdue',icon:'⏰',label:'Overdue'},{id:'reservations',icon:'🔖',label:'Reservations'}]},
+  {section:'Finance', items:[{id:'fines',icon:'₹',label:'Fines & Payments'}]},
+  {section:'People', items:[{id:'members',icon:'👥',label:'Members'}]},
+];
+const MEM_NAV = [
+  {section:'My Library', items:[
+    {id:'dashboard',icon:'⊞',label:'My Dashboard'},
+    {id:'browse-books',icon:'📖',label:'Browse Books'},
+    {id:'my-issues',icon:'↗',label:'My Issued Books'},
+    {id:'my-fines',icon:'₹',label:'My Fines'},
+    {id:'my-reservations',icon:'🔖',label:'My Reservations'},
+  ]},
+];
+const TITLES = {
+  dashboard:'Dashboard','sql-runner':'SQL Runner',books:'Books',
+  copies:'Copies & Racks',authors:'Authors & Publishers',
+  issues:'Issued Books',returns:'Return Transactions',overdue:'Overdue Books',
+  reservations:'Reservations',fines:'Fines & Payments',members:'Members',
+  'browse-books':'Browse Books','my-issues':'My Issued Books',
+  'my-fines':'My Fines','my-reservations':'My Reservations'
+};
+
+// Init header + nav
+document.getElementById('topbar-user').textContent = USER.name;
+document.getElementById('logged-in-as').textContent = USER.name;
+const badge = document.getElementById('topbar-badge');
+if(IS_LIB){
+  badge.textContent = (USER.staff_role||'LIBRARIAN').toUpperCase();
+  badge.className = 'badge badge-lib';
+  document.getElementById('sidebar-role').textContent = 'Librarian Portal';
+} else {
+  badge.textContent = (USER.membership_type||'MEMBER').toUpperCase();
+  badge.className = 'badge badge-mem';
+  document.getElementById('sidebar-role').textContent = 'Member Portal';
+}
+
+const nav = IS_LIB ? LIB_NAV : MEM_NAV;
+let navHtml = '';
+nav.forEach(sec=>{
+  navHtml += `<div class="nav-sec">${sec.section}</div>`;
+  sec.items.forEach(it=>{
+    navHtml += `<div class="nav-item" id="nav-${it.id}" onclick="navigate('${it.id}')">
+      <span class="nav-icon">${it.icon}</span>${it.label}</div>`;
+  });
+});
+document.getElementById('nav-links').innerHTML = navHtml;
+
+// ── HELPERS ──
+function fmtDate(s){ if(!s)return'—'; const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+const STATUS_MAP = {
+  available:{cls:'p-green',label:'Available'},issued:{cls:'p-gold',label:'Issued'},
+  damaged:{cls:'p-red',label:'Damaged'},active:{cls:'p-green',label:'Active'},
+  inactive:{cls:'p-grey',label:'Inactive'},unpaid:{cls:'p-red',label:'Unpaid'},
+  paid:{cls:'p-green',label:'Paid'},fulfilled:{cls:'p-blue',label:'Fulfilled'},
+  cancelled:{cls:'p-grey',label:'Cancelled'},returned:{cls:'p-green',label:'Returned'},
+};
+function pill(v){ const c=STATUS_MAP[v]; if(!c)return v||'—'; return `<span class="pill ${c.cls}">${c.label}</span>`; }
+function tbl(cols,rows,empty='No data.'){
+  if(!rows.length)return`<div class="tbl-wrap"><div class="empty">${empty}</div></div>`;
+  const ths=cols.map(c=>`<th>${c.label}</th>`).join('');
+  const tds=rows.map(r=>{
+    const cls=r._rowClass||'';
+    const cells=cols.map(c=>{
+      let v=r[c.key];
+      if(c.render)v=c.render(v,r);
+      else if(v!==null&&v!==undefined&&STATUS_MAP[v])v=pill(v);
+      else if(v===null||v===undefined)v='—';
+      return`<td>${v}</td>`;
+    }).join('');
+    return`<tr class="${cls}">${cells}</tr>`;
+  }).join('');
+  return`<div class="tbl-wrap"><table><thead><tr>${ths}</tr></thead><tbody>${tds}</tbody></table></div>`;
+}
+function hdr(title,btn=''){return`<div class="sec-hdr"><div class="sec-title">${title}</div>${btn}</div>`;}
+async function apiFetch(url,opts){
+  const r=await fetch(url,opts);
+  return r.json();
+}
+
+let currentPage='';
+
+async function navigate(page){
+  currentPage=page;
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const ni=document.getElementById('nav-'+page);
+  if(ni)ni.classList.add('active');
+  document.getElementById('topbar-title').textContent=TITLES[page]||page;
+  document.getElementById('content-area').innerHTML='<div class="loading">Loading…</div>';
+  const html=await renderPage(page);
+  document.getElementById('content-area').innerHTML=html;
+  bindHandlers(page);
+}
+
+async function renderPage(page){
+  switch(page){
+    case 'dashboard':       return IS_LIB ? await renderLibDash() : await renderMemDash();
+    case 'sql-runner':      return renderSqlRunner();
+    case 'books':           return await renderBooks();
+    case 'copies':          return await renderCopies();
+    case 'authors':         return await renderAuthors();
+    case 'issues':          return await renderIssues();
+    case 'returns':         return await renderReturns();
+    case 'overdue':         return await renderOverdue();
+    case 'reservations':    return await renderReservations();
+    case 'fines':           return await renderFines();
+    case 'members':         return await renderMembers();
+    case 'browse-books':    return await renderBrowse();
+    case 'my-issues':       return await renderMyIssues();
+    case 'my-fines':        return await renderMyFines();
+    case 'my-reservations': return await renderMyReservations();
+    default: return '<div class="empty">Page not found.</div>';
+  }
+}
+
+// ── PAGES ──
+async function renderLibDash(){
+  const d=await apiFetch('/api/stats');
+  return`
+  <div class="stat-grid">
+    <div class="stat-card sc-gold"><div class="sc-label">Total Books</div><div class="sc-value">${d.total_books}</div><div class="sc-sub">Titles in catalogue</div></div>
+    <div class="stat-card sc-green"><div class="sc-label">Active Members</div><div class="sc-value">${d.active_members}</div><div class="sc-sub">Registered & active</div></div>
+    <div class="stat-card sc-blue"><div class="sc-label">Copies Issued</div><div class="sc-value">${d.issued_copies}</div><div class="sc-sub">Currently out</div></div>
+    <div class="stat-card sc-red"><div class="sc-label">Unpaid Fines</div><div class="sc-value">₹${d.unpaid_fines}</div><div class="sc-sub">Outstanding dues</div></div>
+  </div>
+  <div class="grid2">
+    <div>${hdr('Recent Issues')}${tbl([
+      {key:'member',label:'Member'},{key:'title',label:'Book'},{key:'due_date',label:'Due',render:fmtDate}
+    ],d.recent_issues)}</div>
+    <div>${hdr('Books by Category')}${tbl([
+      {key:'category_name',label:'Category'},{key:'cnt',label:'Books'}
+    ],d.category_counts)}</div>
+  </div>`;
+}
+
+async function renderMemDash(){
+  const d=await apiFetch('/api/stats');
+  return`
+  <div class="portal-note">👋 Welcome back, <b>${USER.name}</b>! Here's your library activity.</div>
+  <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat-card sc-blue"><div class="sc-label">Books Issued</div><div class="sc-value">${d.my_issues.length}</div><div class="sc-sub">All time</div></div>
+    <div class="stat-card sc-gold"><div class="sc-label">Currently Out</div><div class="sc-value">${d.active_issues}</div><div class="sc-sub">Not yet returned</div></div>
+    <div class="stat-card sc-red"><div class="sc-label">Outstanding Fines</div><div class="sc-value">₹${d.unpaid_fines||0}</div><div class="sc-sub">Total: ₹${d.total_fines||0}</div></div>
+  </div>
+  ${hdr('My Issued Books')}
+  ${tbl([
+    {key:'title',label:'Book'},{key:'issue_date',label:'Issued',render:fmtDate},
+    {key:'due_date',label:'Due',render:fmtDate},{key:'status',label:'Status'}
+  ],d.my_issues,'No issued books.')}`;
+}
+
+async function renderBooks(){
+  const rows=await apiFetch('/api/books');
+  return`
+  ${hdr('All Books',`<button class="btn btn-p btn-sm" onclick="showAddBook()">+ Add Book</button>`)}
+  ${tbl([
+    {key:'title',label:'Title'},{key:'authors',label:'Author(s)'},
+    {key:'category_name',label:'Category'},{key:'publisher',label:'Publisher'},
+    {key:'year_published',label:'Year'},
+    {key:'avail',label:'Available',render:(v,r)=>`<span class="mono">${v}/${r.total}</span>`},
+  ],rows)}`;
+}
+
+async function renderCopies(){
+  const rows=await apiFetch('/api/copies');
+  return`
+  ${hdr('Book Copies & Rack Locations')}
+  ${tbl([
+    {key:'copy_id',label:'Copy ID',render:v=>`<span class="mono">#${v}</span>`},
+    {key:'title',label:'Book'},{key:'status',label:'Status'},
+    {key:'rack_number',label:'Rack'},{key:'section',label:'Section'},
+  ],rows)}`;
+}
+
+async function renderAuthors(){
+  const rows=await apiFetch('/api/authors');
+  return`
+  ${hdr('Authors')}
+  ${tbl([
+    {key:'name',label:'Author'},{key:'country',label:'Country'},
+    {key:'book_count',label:'Books'},{key:'books',label:'Titles'},
+  ],rows)}`;
+}
+
+async function renderIssues(){
+  const rows=(await apiFetch('/api/issues')).map(r=>({...r,_rowClass:r.is_overdue?'overdue-row':''}));
+  return`
+  ${hdr('All Issue Transactions',`<button class="btn btn-p btn-sm" onclick="showIssueBook()">Issue Book</button>`)}
+  ${tbl([
+    {key:'issue_id',label:'#',render:v=>`<span class="mono">${v}</span>`},
+    {key:'member',label:'Member'},{key:'title',label:'Book'},
+    {key:'copy_id',label:'Copy',render:v=>`<span class="mono">#${v}</span>`},
+    {key:'issue_date',label:'Issued',render:fmtDate},{key:'due_date',label:'Due',render:fmtDate},
+    {key:'state',label:'Status',render:v=>pill(v)},
+  ],rows)}`;
+}
+
+async function renderReturns(){
+  const rows=await apiFetch('/api/returns');
+  return`
+  ${hdr('Return Transactions',`<button class="btn btn-p btn-sm" onclick="showReturnBook()">Record Return</button>`)}
+  ${tbl([
+    {key:'return_id',label:'#',render:v=>`<span class="mono">${v}</span>`},
+    {key:'member',label:'Member'},{key:'title',label:'Book'},
+    {key:'return_date',label:'Returned',render:fmtDate},{key:'due_date',label:'Was Due',render:fmtDate},
+    {key:'amount',label:'Fine',render:v=>v!=null?`₹${v}`:'—'},{key:'paid_status',label:'Status'},
+  ],rows)}`;
+}
+
+async function renderOverdue(){
+  const rows=(await apiFetch('/api/overdue')).map(r=>({...r,_rowClass:'overdue-row'}));
+  return`
+  ${hdr('Overdue Books')}
+  ${rows.length===0
+    ?'<div class="tbl-wrap"><div class="empty">🎉 No overdue books!</div></div>'
+    :tbl([
+      {key:'member',label:'Member'},{key:'title',label:'Book'},
+      {key:'due_date',label:'Was Due',render:fmtDate},
+      {key:'days_late',label:'Days Late',render:v=>`<b style="color:var(--red)">${v}</b>`},
+    ],rows)}`;
+}
+
+async function renderReservations(){
+  const rows=await apiFetch('/api/reservations');
+  return`
+  ${hdr('Reservations')}
+  ${tbl([
+    IS_LIB?{key:'member',label:'Member'}:null,
+    {key:'title',label:'Book'},{key:'reservation_date',label:'Date',render:fmtDate},{key:'status',label:'Status'}
+  ].filter(Boolean),rows)}`;
+}
+
+async function renderFines(){
+  const [rows,summary]=await Promise.all([apiFetch('/api/fines'),apiFetch('/api/fines/summary')]);
+  return`
+  <div class="stat-grid" style="grid-template-columns:1fr 1fr;margin-bottom:18px">
+    <div class="stat-card sc-gold"><div class="sc-label">Total Fines</div><div class="sc-value">₹${summary.total}</div></div>
+    <div class="stat-card sc-red"><div class="sc-label">Unpaid</div><div class="sc-value">₹${summary.unpaid}</div></div>
+  </div>
+  ${hdr('Fine Records')}
+  ${tbl([
+    IS_LIB?{key:'member',label:'Member'}:null,
+    {key:'title',label:'Book'},{key:'return_date',label:'Return Date',render:fmtDate},
+    {key:'amount',label:'Amount',render:v=>`₹${v}`},{key:'paid_status',label:'Status'},
+    {key:'payment_method',label:'Method'},
+  ].filter(Boolean),rows)}`;
+}
+
+async function renderMembers(){
+  const rows=await apiFetch('/api/members');
+  return`
+  ${hdr('Members',`<button class="btn btn-p btn-sm" onclick="showAddMember()">+ Add Member</button>`)}
+  ${tbl([
+    {key:'name',label:'Name'},{key:'email',label:'Email'},
+    {key:'membership_type',label:'Type'},{key:'status',label:'Status'},
+    {key:'total_issues',label:'Books Issued'},
+  ],rows)}`;
+}
+
+async function renderBrowse(){
+  const rows=await apiFetch('/api/books');
+  const cards=rows.map(r=>`
+    <div class="book-card">
+      <div class="book-card-title">${r.title}</div>
+      <div class="book-card-auth">${r.authors||'Unknown'}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="pill p-blue" style="font-size:.62rem">${r.category_name}</span>
+        ${r.avail>0?`<span class="pill p-green">${r.avail} available</span>`:`<span class="pill p-grey">Unavailable</span>`}
+      </div>
+    </div>`).join('');
+  return`
+  <div class="portal-note">Browse the full catalogue. Green badge means copies are available to borrow.</div>
+  ${hdr('Book Catalogue')}
+  <div class="book-grid">${cards}</div>`;
+}
+
+async function renderMyIssues(){
+  const d=await apiFetch('/api/stats');
+  return`
+  ${hdr('My Issued Books')}
+  ${tbl([
+    {key:'title',label:'Book'},{key:'issue_date',label:'Issued',render:fmtDate},
+    {key:'due_date',label:'Due',render:fmtDate},{key:'status',label:'Status'},
+  ],d.my_issues,'No issued books.')}`;
+}
+
+async function renderMyFines(){
+  const rows=await apiFetch('/api/fines');
+  return`
+  ${hdr('My Fines')}
+  ${tbl([
+    {key:'title',label:'Book'},{key:'amount',label:'Amount',render:v=>`₹${v}`},
+    {key:'paid_status',label:'Status'},{key:'payment_method',label:'Method'},
+  ],rows,'No fines.')}`;
+}
+
+async function renderMyReservations(){
+  const rows=await apiFetch('/api/reservations');
+  return`
+  ${hdr('My Reservations')}
+  ${tbl([
+    {key:'title',label:'Book'},{key:'reservation_date',label:'Date',render:fmtDate},{key:'status',label:'Status'},
+  ],rows,'No reservations.')}`;
+}
+
+// ── SQL RUNNER ──
+const PRESETS=[
+  {label:'All Books',q:'SELECT * FROM Books;'},
+  {label:'Active Members',q:"SELECT name, email, membership_type FROM Members WHERE status = 'active';"},
+  {label:'Available Copies',q:"SELECT bc.copy_id, b.title, bc.status FROM Book_Copies bc JOIN Books b ON bc.book_id = b.book_id WHERE bc.status = 'available';"},
+  {label:'Books by Category',q:'SELECT c.category_name, COUNT(b.book_id) AS total_books FROM Books b JOIN Category c ON b.category_id = c.category_id GROUP BY c.category_name;'},
+  {label:'Issued Books',q:"SELECT m.name AS member_name, b.title, i.issue_date, i.due_date FROM Issue_Transaction i JOIN Members m ON i.member_id = m.member_id JOIN Book_Copies bc ON i.copy_id = bc.copy_id JOIN Books b ON bc.book_id = b.book_id;"},
+  {label:'Overdue',q:`SELECT m.name AS member_name, b.title, i.due_date FROM Issue_Transaction i JOIN Members m ON i.member_id=m.member_id JOIN Book_Copies bc ON i.copy_id=bc.copy_id JOIN Books b ON bc.book_id=b.book_id LEFT JOIN Return_Transaction rt ON rt.issue_id=i.issue_id WHERE i.due_date < DATE('now') AND rt.return_id IS NULL;`},
+  {label:'Unpaid Fines',q:"SELECT m.name AS member_name, f.amount FROM Fine f JOIN Return_Transaction r ON f.return_id = r.return_id JOIN Issue_Transaction i ON r.issue_id = i.issue_id JOIN Members m ON i.member_id = m.member_id WHERE f.paid_status = 'unpaid';"},
+  {label:'Most Issued Books',q:'SELECT b.title, COUNT(*) AS issue_count FROM Issue_Transaction i JOIN Book_Copies bc ON i.copy_id = bc.copy_id JOIN Books b ON bc.book_id = b.book_id GROUP BY b.title ORDER BY issue_count DESC;',hard:true},
+  {label:'Members Never Issued',q:'SELECT name, membership_type FROM Members WHERE member_id NOT IN (SELECT DISTINCT member_id FROM Issue_Transaction);',hard:true},
+  {label:'Copy Availability',q:"SELECT b.title, COUNT(bc.copy_id) AS total, SUM(CASE WHEN bc.status='available' THEN 1 ELSE 0 END) AS available FROM Books b JOIN Book_Copies bc ON b.book_id=bc.book_id GROUP BY b.title;",hard:true},
+  {label:'Book-Rack Locations',q:'SELECT DISTINCT b.title, rk.rack_number, rk.section FROM Books b JOIN Book_Copies bc ON b.book_id=bc.book_id JOIN Rack rk ON bc.rack_id=rk.rack_id;'},
+  {label:'Reservations',q:'SELECT b.title, m.name AS reserved_by, r.reservation_date, r.status FROM Reservation r JOIN Books b ON r.book_id=b.book_id JOIN Members m ON r.member_id=m.member_id;'},
+];
+
+function renderSqlRunner(){
+  const chips=PRESETS.map((p,i)=>`<div class="chip${p.hard?' hard':''}" onclick="loadPreset(${i})">${p.label}</div>`).join('');
+  return`
+  <div style="margin-bottom:16px">
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Quick Queries — click to load &amp; run</div>
+    <div class="preset-chips">${chips}</div>
+  </div>
+  <div class="tbl-wrap" style="padding:18px">
+    <div class="sec-title" style="margin-bottom:12px">SQL Query Runner <span style="font-size:.65rem;color:var(--muted);font-family:var(--font-mono)">— running against libracore.db on disk</span></div>
+    <textarea class="sql-editor" id="sql-input" placeholder="SELECT * FROM Books;">${PRESETS[0].q}</textarea>
+    <div class="sql-run-bar">
+      <button class="btn btn-p" onclick="runSql()">▶ Run Query</button>
+      <button class="btn btn-g" onclick="clearSql()">Clear</button>
+      <span class="sql-status" id="sql-status"></span>
+    </div>
+  </div>
+  <div id="sql-results" style="margin-top:16px"></div>`;
+}
+
+function loadPreset(i){ const el=document.getElementById('sql-input'); if(el){el.value=PRESETS[i].q; runSql();} }
+
+async function runSql(){
+  const q=(document.getElementById('sql-input')?.value||'').trim();
+  if(!q)return;
+  const status=document.getElementById('sql-status');
+  const results=document.getElementById('sql-results');
+  status.className='sql-status';
+  status.textContent='Running…';
+  const data=await apiFetch('/api/sql',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q})});
+  if(!data.ok){
+    status.className='sql-status err';
+    status.textContent='✗ '+data.error;
+    results.innerHTML='';
+    return;
+  }
+  if(data.msg){
+    status.className='sql-status ok';
+    status.textContent=`✓ ${data.msg} (${data.ms}ms)`;
+    results.innerHTML=`<div class="tbl-wrap"><div class="empty">${data.msg}</div></div>`;
+    return;
+  }
+  status.className='sql-status ok';
+  status.textContent=`✓ ${data.rows.length} row${data.rows.length!==1?'s':''} returned (${data.ms}ms)`;
+  if(!data.rows.length){results.innerHTML='<div class="tbl-wrap"><div class="empty">0 rows returned.</div></div>';return;}
+  const cols=data.cols.map(c=>({key:c,label:c}));
+  results.innerHTML=tbl(cols,data.rows);
+}
+
+function clearSql(){
+  const el=document.getElementById('sql-input'); if(el)el.value='';
+  const s=document.getElementById('sql-status'); if(s)s.textContent='';
+  const r=document.getElementById('sql-results'); if(r)r.innerHTML='';
+}
+
+// ── MODALS ──
+function openModal(html){document.getElementById('modal-box').innerHTML=html;document.getElementById('overlay').classList.add('open');}
+function closeModal(){document.getElementById('overlay').classList.remove('open');}
+function closeOverlay(e){if(e.target===document.getElementById('overlay'))closeModal();}
+
+async function showAddBook(){
+  const [cats,pubs]=await Promise.all([apiFetch('/api/categories'),apiFetch('/api/publishers')]);
+  const catOpts=cats.map(c=>`<option value="${c.category_id}">${c.category_name}</option>`).join('');
+  const pubOpts=pubs.map(p=>`<option value="${p.publisher_id}">${p.name}</option>`).join('');
+  openModal(`
+    <div class="modal-title">Add New Book</div>
+    <div class="field"><label>Title</label><input id="ab-title" placeholder="Book title"/></div>
+    <div class="field"><label>ISBN</label><input id="ab-isbn" placeholder="e.g. 12345"/></div>
+    <div class="field"><label>Publisher</label><select id="ab-pub"><option value="">— select —</option>${pubOpts}</select></div>
+    <div class="field"><label>Category</label><select id="ab-cat"><option value="">— select —</option>${catOpts}</select></div>
+    <div class="field"><label>Year</label><input id="ab-year" type="number" placeholder="${new Date().getFullYear()}"/></div>
+    <div class="field"><label>Edition</label><input id="ab-ed" type="number" value="1"/></div>
+    <div class="modal-foot">
+      <button class="btn btn-g" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-p" onclick="doAddBook()">Add Book</button>
+    </div>`);
+}
+
+async function doAddBook(){
+  const title=document.getElementById('ab-title').value.trim();
+  const isbn=document.getElementById('ab-isbn').value.trim();
+  const pub=document.getElementById('ab-pub').value;
+  const cat=document.getElementById('ab-cat').value;
+  const year=document.getElementById('ab-year').value||new Date().getFullYear();
+  const ed=document.getElementById('ab-ed').value||1;
+  if(!title||!pub||!cat){alert('Title, Publisher, and Category are required.');return;}
+  const r=await apiFetch('/api/books',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,isbn,publisher_id:parseInt(pub),category_id:parseInt(cat),year_published:parseInt(year),edition:parseInt(ed)})});
+  if(r.ok){closeModal();navigate('books');}
+  else alert('Error: '+r.error);
+}
+
+async function showIssueBook(){
+  const [members,copies]=await Promise.all([apiFetch('/api/members/active'),apiFetch('/api/issues/available-copies')]);
+  const memOpts=members.map(m=>`<option value="${m.member_id}">${m.name} (${m.membership_type})</option>`).join('');
+  const copyOpts=copies.map(c=>`<option value="${c.copy_id}">${c.label}</option>`).join('');
+  openModal(`
+    <div class="modal-title">Issue a Book</div>
+    <div class="field"><label>Member</label><select id="is-mem"><option value="">— select —</option>${memOpts}</select></div>
+    <div class="field"><label>Book Copy</label><select id="is-copy"><option value="">— select —</option>${copyOpts}</select></div>
+    <div class="field"><label>Due in (days)</label><input id="is-days" type="number" value="14"/></div>
+    <div class="modal-foot">
+      <button class="btn btn-g" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-p" onclick="doIssueBook()">Issue</button>
+    </div>`);
+}
+
+async function doIssueBook(){
+  const mid=document.getElementById('is-mem').value;
+  const cid=document.getElementById('is-copy').value;
+  const days=document.getElementById('is-days').value||14;
+  if(!mid||!cid){alert('Select member and copy.');return;}
+  const r=await apiFetch('/api/issues',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({member_id:parseInt(mid),copy_id:parseInt(cid),due_days:parseInt(days)})});
+  if(r.ok){closeModal();navigate('issues');}
+  else alert('Error: '+(r.error||'Unknown error'));
+}
+
+async function showReturnBook(){
+  const issues=await apiFetch('/api/returns/active-issues');
+  const opts=issues.map(i=>`<option value="${i.issue_id}">${i.label}</option>`).join('');
+  openModal(`
+    <div class="modal-title">Record Return</div>
+    <div class="field"><label>Issue to Return</label><select id="ret-issue"><option value="">— select —</option>${opts}</select></div>
+    <div class="modal-foot">
+      <button class="btn btn-g" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-p" onclick="doReturn()">Record Return</button>
+    </div>`);
+}
+
+async function doReturn(){
+  const iid=document.getElementById('ret-issue').value;
+  if(!iid){alert('Select an issue.');return;}
+  const r=await apiFetch('/api/returns',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({issue_id:parseInt(iid)})});
+  if(r.ok){
+    if(r.fine>0)alert(`Book returned. Fine of ₹${r.fine} (${r.days_late} days late) added.`);
+    closeModal();navigate('returns');
+  } else alert('Error: '+r.error);
+}
+
+async function showAddMember(){
+  openModal(`
+    <div class="modal-title">Add New Member</div>
+    <div class="field"><label>Full Name</label><input id="am-name" placeholder="Name"/></div>
+    <div class="field"><label>Email</label><input id="am-email" type="email" placeholder="email@example.com"/></div>
+    <div class="field"><label>Phone</label><input id="am-phone" placeholder="10-digit number"/></div>
+    <div class="field"><label>Type</label><select id="am-type"><option value="student">Student</option><option value="faculty">Faculty</option></select></div>
+    <div class="field"><label>Password</label><input id="am-pass" placeholder="pass123"/></div>
+    <div class="modal-foot">
+      <button class="btn btn-g" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-p" onclick="doAddMember()">Add Member</button>
+    </div>`);
+}
+
+async function doAddMember(){
+  const name=document.getElementById('am-name').value.trim();
+  const email=document.getElementById('am-email').value.trim();
+  if(!name||!email){alert('Name and email required.');return;}
+  const r=await apiFetch('/api/members',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,phone:document.getElementById('am-phone').value,membership_type:document.getElementById('am-type').value,password:document.getElementById('am-pass').value||'pass123'})});
+  if(r.ok){closeModal();navigate('members');}
+  else alert('Error: '+r.error);
+}
+
+function bindHandlers(page){
+  if(page==='sql-runner'){
+    const el=document.getElementById('sql-input');
+    if(el)el.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();runSql();}});
+    runSql();
+  }
+}
+
+// Start
+navigate('dashboard');
+</script>
+</body>
+</html>

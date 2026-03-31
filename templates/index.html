@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LibraCore — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0e0f13;--surface:#16181f;--surface2:#1e2029;--border:#2a2d3a;--accent:#c8a96e;--text:#e8e4dc;--muted:#7a7d8c;--green:#5cb88a;--red:#e07070;--blue:#7eb8a4;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;width:380px;max-width:100%;}
+.logo{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--accent);margin-bottom:4px;}
+.sub{font-size:.72rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:28px;}
+.tabs{display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:8px;margin-bottom:24px;}
+.tab{flex:1;padding:8px;border-radius:6px;text-align:center;cursor:pointer;font-size:.8rem;font-weight:600;color:var(--muted);transition:all .15s;}
+.tab.active{background:var(--surface);color:var(--text);}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.field label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.field input,.field select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;width:100%;}
+.field input:focus,.field select:focus{border-color:var(--accent);}
+.field select option{background:var(--surface2);}
+.btn{width:100%;padding:11px;background:var(--accent);color:#0e0f13;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;margin-top:8px;transition:background .15s;}
+.btn:hover{background:#d9bc85;}
+.err{color:var(--red);font-size:.78rem;margin-top:8px;min-height:18px;}
+.hint{font-size:.7rem;color:var(--muted);margin-top:14px;}
+.db-note{display:inline-flex;align-items:center;gap:5px;font-size:.65rem;color:var(--green);background:rgba(92,184,138,.1);border:1px solid rgba(92,184,138,.25);padding:3px 10px;border-radius:20px;margin-bottom:18px;}
+.db-note::before{content:'●';font-size:.5rem;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">📚 LibraCore</div>
+  <div class="sub">Library Management System</div>
+  <div class="db-note">Flask + SQLite Connected</div>
+
+  <div class="tabs">
+    <div class="tab active" id="tab-lib" onclick="switchTab('librarian')">Librarian</div>
+    <div class="tab"        id="tab-mem" onclick="switchTab('member')">Member</div>
+  </div>
+
+  <div id="form-librarian">
+    <div class="field"><label>Username</label><input id="lib-user" placeholder="admin1"/></div>
+    <div class="field"><label>Password</label><input id="lib-pass" type="password" placeholder="admin123"/></div>
+  </div>
+
+  <div id="form-member" style="display:none">
+    <div class="field"><label>Select Member</label>
+      <select id="mem-sel">
+        <option value="">— select —</option>
+        <option value="1">Diya (student)</option>
+        <option value="2">Niharika (student)</option>
+        <option value="3">Apoorva (student)</option>
+        <option value="4">Rahul (faculty)</option>
+        <option value="6">Arjun (student)</option>
+        <option value="7">Meera (faculty)</option>
+      </select>
+    </div>
+    <div class="field"><label>Password</label><input id="mem-pass" type="password" placeholder="pass123"/></div>
+  </div>
+
+  <button class="btn" onclick="doLogin()">Sign In →</button>
+  <div class="err" id="err"></div>
+  <div class="hint">Librarian: <b>admin1 / admin123</b> &nbsp;|&nbsp; Member password: <b>pass123</b></div>
+</div>
+
+<script>
+let currentTab = 'librarian';
+function switchTab(t){
+  currentTab = t;
+  ['lib','mem'].forEach(x=>{
+    document.getElementById('tab-'+x.slice(0,3)).classList.toggle('active', (x==='lib'?'librarian':'member')===t);
+  });
+  document.getElementById('tab-lib').classList.toggle('active',t==='librarian');
+  document.getElementById('tab-mem').classList.toggle('active',t==='member');
+  document.getElementById('form-librarian').style.display = t==='librarian'?'block':'none';
+  document.getElementById('form-member').style.display    = t==='member'?'block':'none';
+}
+
+async function doLogin(){
+  const err = document.getElementById('err');
+  err.textContent = '';
+  let body;
+  if(currentTab==='librarian'){
+    body = { role_type:'librarian', username:document.getElementById('lib-user').value.trim(), password:document.getElementById('lib-pass').value };
+  } else {
+    const mid = document.getElementById('mem-sel').value;
+    if(!mid){ err.textContent='Please select a member.'; return; }
+    body = { role_type:'member', member_id:parseInt(mid), password:document.getElementById('mem-pass').value };
+  }
+  const res  = await fetch('/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+  const data = await res.json();
+  if(data.ok){ window.location.href = data.redirect; }
+  else { err.textContent = data.error; }
+}
+
+document.addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+</script>
+</body>
+</html>
