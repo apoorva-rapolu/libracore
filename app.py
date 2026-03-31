@@ -12,31 +12,10 @@ from flask import Flask, g, jsonify, request, render_template, session, redirect
 # ✅ DEFINE DB PATH FIRST
 DB_PATH = os.path.join(os.path.dirname(__file__), "libracore.db")
 
-def create_admin():
-    conn = sqlite3.connect(DB_PATH)   # ✅ FIXED HERE
-    cursor = conn.cursor()
-
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        username TEXT,
-        password TEXT
-    )
-    ''')
-
-    cursor.execute("SELECT * FROM users WHERE username = 'admin1'")
-    if not cursor.fetchone():
-        cursor.execute("INSERT INTO users VALUES (?, ?)", ("admin1", "admin123"))
-
-    conn.commit()
-    conn.close()
-
-# ✅ CALL FUNCTION
-create_admin()
 
 app = Flask(__name__)
 app.secret_key = "libracore-secret-2024"
-DB_PATH = os.path.join(os.path.dirname(__file__), "libracore.db")
-
+seed_db()
 # ─────────────────────────────────────────
 #  DATABASE CONNECTION HELPERS
 # ─────────────────────────────────────────
