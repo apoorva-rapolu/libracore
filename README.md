@@ -1,6 +1,4 @@
 # LibraCore — Flask + SQLite
-### Lab No. 6 · Mini Project Phase I
-
 ## Architecture
 
 ```
@@ -30,11 +28,6 @@ pip install -r requirements.txt
 ```
 python app.py
 ```
-
-### 4. Open the app
-Go to: **http://localhost:5000**
-
----
 
 ## Login Credentials
 
